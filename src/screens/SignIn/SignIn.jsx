@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import useStyle from './SignInStyle';
 import {
   TextField,
@@ -10,7 +10,6 @@ import {
 const SignIn = () => {
 
   const classes = useStyle();
-/*   const Context = React.createContext({ count: 0, setCount: () => {} }); */
   const [form, setForm] = useState({
     correo: "",
     contrasena: "",

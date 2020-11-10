@@ -9,7 +9,6 @@ import SignIn from '../src/screens/SignIn/SignIn';
 import BooksList from '../src/screens/BooksList/BooksList';
 import AuthorList from '../src/screens/AuthorList/AuthorList';
 import './App.css';
-/* import { UserProvider } from './components/Context/UserContext'; */
 
 const App = () => {
   return (
