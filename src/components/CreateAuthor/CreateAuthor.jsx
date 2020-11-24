@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   Button,
   TextField,
@@ -11,16 +11,50 @@ import {
 } from '@material-ui/core';
 import useStyle from './CreateAuthorStyle';
 import API from '../../API';
+import { Context } from '../../Context/AppContextProvider';
+import { actions } from '../../Context/Reducer';
 
-const CreateAuthor = ({ author }) => {
+const CreateAuthor = () => {
+  const { authorsClient } = API;
   const classes = useStyle();
-  const [text, setText] = useState(author);
+  const [state, dispatch] = useContext(Context);
+  const [text, setText] = useState(state.author);
   const nullText = {
-    ID: "",
-    FirstName: "",
-    LastName: "",
+    id: "",
+    firstName: "",
+    lastName: "",
   }
+  useEffect(() => {
+    return () => {
+      dispatch({ type: actions.REMOVE_AUTHOR })
+    }
+  }, [])
 
+  const editAuthor = async () => {
+    try {
+      await authorsClient.putAuthor(text.id, text)
+        .then((res) => {
+          dispatch({ type: actions.SET_AUTHOR, payload: res.data })
+          console.log(res.data)
+        })
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const deleteAuthor = async () => {
+    try {
+      await authorsClient.deleteAuthor(text.id)
+        .then((res) => {
+          setText(nullText)
+          dispatch({ type: actions.SET_AUTHOR, payload: nullText })
+          console.log(res)
+        })
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
   const handleChangeText = (event) => {
     setText({
       ...text,
@@ -28,22 +62,12 @@ const CreateAuthor = ({ author }) => {
     });
   };
 
-  const editBook = () => {
-    API.apiClient.put('https://fakerestapi.azurewebsites.net/api/Authors/' + text.ID, text)
-      .then((res) => { console.log(res); })
-  };
-
-  const deleteBook = () => {
-    API.apiClient.delete('https://fakerestapi.azurewebsites.net/api/Authors/' + text.ID)
-      .then((res) => { console.log(res); setText(nullText) })
-  }
-
   const handleOnClick = () => {
-    editBook()
+    editAuthor()
   };
 
   const handleDelete = () => {
-    deleteBook()
+    deleteAuthor()
   };
 
   return (
@@ -67,10 +91,10 @@ const CreateAuthor = ({ author }) => {
                   disabled
                   size='small'
                   fullWidth
-                  id="ID"
+                  id="id"
                   label="ID"
                   onChange={handleChangeText}
-                  value={text.ID}
+                  value={text.id}
                   variant="outlined" />
               </Grid>
 
@@ -78,20 +102,20 @@ const CreateAuthor = ({ author }) => {
                 <TextField
                   size='small'
                   fullWidth
-                  id="FirstName"
+                  id="firstName"
                   label="Nombre"
                   onChange={handleChangeText}
-                  value={text.FirstName}
+                  value={text.firstName}
                   variant="outlined" />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   size='small'
                   fullWidth
-                  id="LastName"
+                  id="lastName"
                   label="Apellido"
                   onChange={handleChangeText}
-                  value={text.LastName}
+                  value={text.lastName}
                   variant="outlined"
                 />
               </Grid>

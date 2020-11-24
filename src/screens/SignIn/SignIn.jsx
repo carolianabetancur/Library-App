@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import useStyle from './SignInStyle';
 import {
   TextField,
@@ -6,13 +6,15 @@ import {
   Container,
   Button
 } from '@material-ui/core';
+import { Context } from '../../Context/AppContextProvider';
+import { actions } from '../../Context/Reducer';
 
 const SignIn = () => {
-
+  const [state, dispatch] = useContext(Context);
   const classes = useStyle();
   const [form, setForm] = useState({
-    correo: "",
-    contrasena: "",
+    correo: state.correo,
+    contrasena: state.contrasena,
   });
 
   const handleChangeForm = (event) => {
@@ -23,9 +25,14 @@ const SignIn = () => {
   };
 
   const handleOnClick = () => {
-    localStorage.setItem('correo',form.correo)
-    localStorage.setItem('contrasena',form.contrasena)
-    window.location.href="/books-list"
+    /*  localStorage.setItem('correo',form.correo)
+   localStorage.setItem('contrasena',form.contrasena) */
+    const credentials = {
+      correo: form.correo,
+      contrasena: form.contrasena
+    }
+    dispatch({ type: actions.SET_CRENDENTIALS, payload: credentials })
+    window.location.href = "/books-list"
   };
 
   return (
@@ -35,15 +42,15 @@ const SignIn = () => {
           Inicio sesión
         </Typography>
         <div className={classes.form}>
-          <TextField className={classes.textField} style={{marginBottom: '20px'}}name="correo" label="Correo*" variant="outlined"
+          <TextField className={classes.textField} style={{ marginBottom: '20px' }} name="correo" label="Correo*" variant="outlined"
             value={form.correo} onChange={handleChangeForm} helperText={!form.correo.includes("@") ? 'No parece ser un correo válido' : null} />
         </div>
         <div className={classes.form}>
-          <TextField className={classes.textField} style={{marginBottom: '20px'}} name="contrasena" label="Contraseña*" variant="outlined"
-            value={form.contrasena} onChange={handleChangeForm} helperText={form.contrasena === "" ? 'El campo contraseña está vacío' : null}/>
+          <TextField className={classes.textField} style={{ marginBottom: '20px' }} name="contrasena" label="Contraseña*" variant="outlined"
+            value={form.contrasena} onChange={handleChangeForm} helperText={form.contrasena === "" ? 'El campo contraseña está vacío' : null} />
         </div>
       </Container>
-      <Button disabled={(form.correo && form.contrasena) !== "" ? false : true } onClick={handleOnClick} variant="contained" color="default">Ingresar</Button>
+      <Button disabled={(form.correo && form.contrasena) !== "" ? false : true} onClick={handleOnClick} variant="contained" color="default">Ingresar</Button>
     </div>
   )
 }

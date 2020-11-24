@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   Button,
   TextField,
@@ -11,15 +11,20 @@ import {
 } from '@material-ui/core';
 import useStyle from './CreateBooksStyle';
 import API from '../../API';
+import { Context } from '../../Context/AppContextProvider';
+import { actions } from '../../Context/Reducer';
 
-const CreateBooks = ({ book }) => {
+
+const CreateBooks = () => {
+  const { booksClient } = API;
   const classes = useStyle();
-  const [text, setText] = useState(book);
   const nullText = {
-    ID: "",
-    Title: "",
-    PublishDate: "",
+    id: "",
+    title: "",
+    publishDate: "",
   }
+  const [state, dispatch] = useContext(Context);
+  const [text, setText] = useState(state.book);
 
   const handleChangeText = (event) => {
     setText({
@@ -27,15 +32,51 @@ const CreateBooks = ({ book }) => {
       [event.target.id]: event.target.value
     });
   };
+  useEffect(() => {
+    return () => {
+      dispatch({ type: actions.REMOVE_BOOK })
+    }
+  }, [])
 
-  const editBook = () => {
-    API.apiClient.put('https://fakerestapi.azurewebsites.net/api/Books/' + text.ID, text)
-      .then((res) => { console.log(res); })
-  };
+  const editBook = async () => {
+    try {
+      await booksClient.putBook(text.id, text)
+        .then((res) => {
+          console.log(res.data)
+          // setBook(res.data);
+          dispatch({ type: actions.SET_BOOK, payload: res.data })
+          // setShowModal(true)
+        })
 
-  const deleteBook = () => {
-    API.apiClient.delete('https://fakerestapi.azurewebsites.net/api/Books/' + text.ID)
-      .then((res) => { console.log(res); setText(nullText) })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  // const editBook = () => {
+  //   API.apiClient.put('https://fakerestapi.azurewebsites.net/api/v1/Books/' + text.id, text)
+  //     .then((res) => { console.log(res); })
+  // };
+
+  // const deleteBook = () => {
+  //   API.apiClient.delete('https://fakerestapi.azurewebsites.net/api/v1/Books/' + text.id)
+  //     .then((res) => { console.log(res); setText(nullText) })
+  // }
+
+  const deleteBook = async () => {
+    try {
+      await booksClient.deleteBook(text.id)
+        .then((res) => {
+          console.log(res)
+          setText(nullText)
+          // setBook(res.data);
+          dispatch({ type: actions.SET_BOOK, payload: nullText })
+          // setShowModal(true)
+        })
+
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const handleOnClick = () => {
@@ -67,10 +108,10 @@ const CreateBooks = ({ book }) => {
                   disabled
                   size='small'
                   fullWidth
-                  id="ID"
+                  id="id"
                   label="ID"
                   onChange={handleChangeText}
-                  value={text.ID}
+                  value={text.id}
                   variant="outlined" />
               </Grid>
 
@@ -78,20 +119,20 @@ const CreateBooks = ({ book }) => {
                 <TextField
                   size='small'
                   fullWidth
-                  id="Title"
+                  id="title"
                   label="Título"
                   onChange={handleChangeText}
-                  value={text.Title}
+                  value={text.title}
                   variant="outlined" />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   size='small'
                   fullWidth
-                  id="PublishDate"
+                  id="publishDate"
                   label="Fecha de publicación"
                   onChange={handleChangeText}
-                  value={text.PublishDate}
+                  value={text.publishDate}
                   variant="outlined"
                 />
               </Grid>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -9,47 +9,48 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import useStyle from './AuthorListStyle';
 import API from '../../API';
-import Modal from '@material-ui/core/Modal';
-import CreateAuthor from '../../components/CreateAuthor/CreateAuthor';
+import { Context } from '../../Context/AppContextProvider';
+import { actions } from '../../Context/Reducer';
 
 const AuthorList = () => {
   const classes = useStyle();
-  const baseURL = 'https://fakerestapi.azurewebsites.net/api/';
-
+  const { authorsClient } = API;
+  const [state, dispatch] = useContext(Context);
   const [authors, setAuthors] = useState([]);
-  const [author, setAuthor] = useState();
-  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     getAuthors()
-  }, [authors === null || showModal])
+  }, [authors === null])
 
+  const getAuthors = async () => {
+    try {
+      await authorsClient.getAuthors()
+        .then((res) => {
+          setAuthors(res.data)
+        })
+    } catch (error) {
+      console.log(error)
+    }
+  }
   const handleModal = (id) => {
     getAuthor(id)
   }
 
-  const getAuthors = () => {
-    API.apiClient.get(baseURL+'Authors')
-      .then((res) => { console.log(res); setAuthors(res.data) })
+  const getAuthor = async (id) => {
+    try {
+      await authorsClient.getAuthor(id)
+        .then((res) => {
+          dispatch({ type: actions.SET_AUTHOR, payload: res.data })
+          window.location.href = "/edit-authors"
+        })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
-  const getAuthor = (id) => {
-    API.apiClient.get(baseURL+'Authors/' + id)
-      .then((res) => { console.log(res); setAuthor(res.data); setShowModal(true) })
-  }
-const handleClose = () => {
-  setShowModal(false)
-}
   return (
     <div className={classes.root}>
-      <Modal
-        open={showModal}
-        onClose={handleClose}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
-      >
-        <CreateAuthor author={author}/>
-      </Modal>
+
       <TableContainer component={Paper}>
         <Table className={classes.table} size="small" aria-label="a dense table">
           <TableHead>
@@ -66,11 +67,11 @@ const handleClose = () => {
           <TableBody>
             {authors.map((option, index) => (
               <TableRow key={index}>
-                <TableCell align="center">{option.ID}</TableCell>
-                <TableCell align="center">{option.FirstName}</TableCell>
-                <TableCell align="center">{option.LastName}</TableCell>
+                <TableCell align="center">{option.id}</TableCell>
+                <TableCell align="center">{option.firstName}</TableCell>
+                <TableCell align="center">{option.lastName}</TableCell>
                 <TableCell align="center">
-                  <Button onClick={() => handleModal(option.ID)} variant="contained"
+                  <Button onClick={() => handleModal(option.id)} variant="contained"
                     color="Secundary">VER</Button>
                 </TableCell>
               </TableRow>
